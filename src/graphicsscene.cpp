@@ -164,8 +164,9 @@ bool GraphicsScene::saveToFile(QFile *file) const
 	    branch;
 
 	file->write(
-	    QJsonDocument(object).
-	    toJson()
+	    QJsonDocument(object).toJson(
+	    QJsonDocument::Compact
+	    )
 	);
 	return true;
 }
