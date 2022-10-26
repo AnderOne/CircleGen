@@ -112,6 +112,7 @@ void MainWindow::on_listView_clicked()
 
 void MainWindow::on_buttonReset_clicked()
 {
+	listModel->removeRows(0, listModel->rowCount());
 	ui->graphicsView->getScene()->reset();
 }
 

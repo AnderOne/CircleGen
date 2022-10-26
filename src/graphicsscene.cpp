@@ -461,7 +461,14 @@ void GraphicsScene::updateKnots()
 void GraphicsScene::update()
 {
 	//Обновляем текстовый путь в дереве
-	if (_infoPath) _infoPath->setText(QString(_treeTextPath.c_str()));
+	if (_infoPath) {
+		QPalette palette;
+		palette.setColor(QPalette::WindowText, _lastNode? Qt::red: Qt::black);
+		_infoPath->setPalette(palette);
+		_infoPath->setText(
+		_textPath.c_str()
+		);
+	}
 
 	//Удаляем вспомогательные линии
 	for (const auto& line : _lines) { removeItem(line); delete line; }
@@ -516,9 +523,9 @@ void GraphicsScene::update()
 
 	//Обновляем элементы
 	if (_treeNode) {
-		for (int i = 0; i < _treeTextPath.size(); ++ i) {
+		for (int i = 0; i < _textPath.size(); ++ i) {
 			auto circle = _indexToCircle.at(i + 1);
-			if (_treeTextPath[i] == '0') {
+			if (_textPath[i] == '0') {
 				circle->setOpaque(false);
 				circle->setFilled(_filledArea);
 			}
@@ -637,13 +644,16 @@ bool GraphicsScene::goToBack()
 	circle->setCenter(
 	    prev->_center
 	);
+	if (_lastNode == prev) {
+	    _lastNode.reset();
+	}
 	_treeNode = prev;
 
-	_treeTextPath[_treePath.size()] = 'x';
+	_textPath[_treePath.size()] = 'x';
 
 	if (_mode != Mode::Test) {
-		_knot1 = nullptr;
-		_knot2 = nullptr;
+	    _knot1 = nullptr;
+	    _knot2 = nullptr;
 	}
 	updateKnots();
 
@@ -656,10 +666,10 @@ bool GraphicsScene::goToNext(bool ans)
 		return false;
 
 	auto next = _treeNode->_branch[ans];
-	if (!next) next =
-	        std::make_shared<TreeNode>();
-	//_treeNode->_branch[ans] = next;
-	_treePath.push_back(_treeNode);
+	if (!next) {
+		if (!_lastNode) _lastNode = _treeNode;
+		next = std::make_shared<TreeNode>();
+	}
 
 	auto* circle = _treeNode->_circle;
 	int index = circle->getIndex() + 1;
@@ -677,9 +687,10 @@ bool GraphicsScene::goToNext(bool ans)
 	circle->setCenter(next->_center);
 	circle->setEnabled(true);
 	circle->setVisible(true);
+	_treePath.push_back(_treeNode);
 	_treeNode = next;
 
-	_treeTextPath[index - 2] = '0' + ans;
+	_textPath[index - 2] = '0' + ans;
 
 	if (_mode != Mode::Test) {
 		_knot1 = nullptr;
@@ -694,7 +705,7 @@ bool GraphicsScene::goToInv()
 {
 	if (!_treeNode) return false;
 
-	int ans = _treeTextPath[_treePath.size() - 1] == '1';
+	int ans = _textPath[_treePath.size() - 1] == '1';
 
 	if (!goToBack()) return false;
 
@@ -722,22 +733,25 @@ void GraphicsScene::savePath()
 	for (int i = 1; i < _treePath.size(); ++ i) {
 		auto prev = _treePath[i - 1];
 		auto node = _treePath[i];
-		int ans = (_treeTextPath[i-1] == '1');
+		int ans = (_textPath[i-1] == '1');
 		if (!prev->_branch[ans]) {
 			prev->_branch[ans] = node;
 		}
 	}
 	auto prev = _treePath.back();
 	int len = _treePath.size();
-	int ans = (_treeTextPath[len - 1] == '1');
+	int ans = (_textPath[len - 1] == '1');
 	prev->_branch[ans] =
 	    _treeNode;
+
+	_lastNode.reset();
+	update();
 }
 
 void GraphicsScene::clear()
 {
 	while (!_circles.empty()) delCircle(*_circles.begin());
-	_treeTextPath = "";
+	_textPath = "";
 	_treePath.clear();
 	_treeRoot.reset();
 	_treeNode.reset();
@@ -749,7 +763,7 @@ void GraphicsScene::clear()
 
 void GraphicsScene::start()
 {
-	_treeTextPath = std::string(_circles.size() - 2, 'x');
+	_textPath = std::string(_circles.size() - 2, 'x');
 
 	if (_mode == Mode::Tree || !_treeRoot) {
 		if (!_treeRoot) {
@@ -797,10 +811,23 @@ void GraphicsScene::start()
 
 void GraphicsScene::reset()
 {
-	if (_treeNode && (_mode == Mode::Tree)) {
-		_treeNode->_branch[0].reset();
-		_treeNode->_branch[1].reset();
+	if (!_treeNode || (_mode != Mode::Tree)) return;
+
+	if (_treeNode != _treeRoot) {
+		bool ans =
+		_textPath[_treePath.size()-1] == '1';
+		goToBack();
+		_treeNode->_branch[ans].reset();
+		goToNext(ans);
+		updateKnots();
+		return;
 	}
+
+	_treeRoot->_circle->setCenter(
+	    {0., 0.}
+	);
+	_treeRoot.reset();
+	start();
 }
 
 void GraphicsScene::init()

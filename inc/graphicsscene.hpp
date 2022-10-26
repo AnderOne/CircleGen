@@ -211,9 +211,10 @@ private:
 	void update();
 
 	std::vector<std::shared_ptr<TreeNode>> _treePath;
-	std::string _treeTextPath;
+	std::string _textPath;
 	std::shared_ptr<TreeNode> _treeNode;
 	std::shared_ptr<TreeNode> _treeRoot;
+	std::shared_ptr<TreeNode> _lastNode;
 
 	std::vector<QGraphicsLineItem*> _lines;
 
