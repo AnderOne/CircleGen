@@ -777,6 +777,7 @@ void GraphicsScene::start()
 		circle->setCenter(
 		_treeNode->_center
 		);
+		_lastNode.reset();
 		_treePath.clear();
 		for (const auto& c : _circles) {
 			if (c->getIndex() > 1) {
@@ -803,6 +804,7 @@ void GraphicsScene::start()
 		circle->setCenter(
 		_treeNode->_center
 		);
+		_lastNode.reset();
 		_treePath.clear();
 	}
 
