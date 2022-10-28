@@ -188,6 +188,7 @@ private:
 		std::array<std::shared_ptr<TreeNode>, 2> _branch;
 		CircleItem *_circle;
 		QPointF _center;
+		bool _fixed = false;
 	};
 
 	void convert(TreeNode *node, QJsonObject &object) const;
@@ -214,7 +215,6 @@ private:
 	std::string _textPath;
 	std::shared_ptr<TreeNode> _treeNode;
 	std::shared_ptr<TreeNode> _treeRoot;
-	std::shared_ptr<TreeNode> _lastNode;
 
 	std::vector<QGraphicsLineItem*> _lines;
 

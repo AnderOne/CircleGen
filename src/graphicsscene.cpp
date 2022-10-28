@@ -103,8 +103,10 @@ void GraphicsScene::parse(TreeNode *node, int index, const QJsonObject &object)
 			auto next = std::make_shared<TreeNode>();
 			parse(next.get(), index + 1, obj);
 			node->_branch[i] = next;
+			next->_fixed = true;
 		}
 	}
+	node->_fixed = true;
 }
 
 bool GraphicsScene::loadFromFile(QFile *file)
@@ -463,7 +465,9 @@ void GraphicsScene::update()
 	//Обновляем текстовый путь в дереве
 	if (_infoPath) {
 		QPalette palette;
-		palette.setColor(QPalette::WindowText, _lastNode? Qt::red: Qt::black);
+		palette.setColor(
+		QPalette::WindowText, (!_treeNode || !_treeNode->_fixed)? Qt::red: Qt::black
+		);
 		_infoPath->setPalette(palette);
 		_infoPath->setText(
 		_textPath.c_str()
@@ -644,9 +648,6 @@ bool GraphicsScene::goToBack()
 	circle->setCenter(
 	    prev->_center
 	);
-	if (_lastNode == prev) {
-	    _lastNode.reset();
-	}
 	_treeNode = prev;
 
 	_textPath[_treePath.size()] = 'x';
@@ -667,7 +668,6 @@ bool GraphicsScene::goToNext(bool ans)
 
 	auto next = _treeNode->_branch[ans];
 	if (!next) {
-		if (!_lastNode) _lastNode = _treeNode;
 		next = std::make_shared<TreeNode>();
 	}
 
@@ -728,15 +728,23 @@ bool GraphicsScene::goToPath(const std::string &path)
 
 void GraphicsScene::savePath()
 {
-	if (!_treeRoot || _treePath.empty()) return;
+	if (_treeNode == nullptr) return;
 
 	for (int i = 1; i < _treePath.size(); ++ i) {
 		auto prev = _treePath[i - 1];
 		auto node = _treePath[i];
-		int ans = (_textPath[i-1] == '1');
+		int ans = (_textPath[i - 1] == '1');
 		if (!prev->_branch[ans]) {
 			prev->_branch[ans] = node;
 		}
+	}
+	_treeNode->_fixed = true;
+	for (auto& node : _treePath) {
+		node->_fixed = true;
+	}
+	if (_treePath.empty()) {
+		update();
+		return;
 	}
 	auto prev = _treePath.back();
 	int len = _treePath.size();
@@ -744,7 +752,6 @@ void GraphicsScene::savePath()
 	prev->_branch[ans] =
 	    _treeNode;
 
-	_lastNode.reset();
 	update();
 }
 
@@ -777,7 +784,6 @@ void GraphicsScene::start()
 		circle->setCenter(
 		_treeNode->_center
 		);
-		_lastNode.reset();
 		_treePath.clear();
 		for (const auto& c : _circles) {
 			if (c->getIndex() > 1) {
@@ -804,7 +810,6 @@ void GraphicsScene::start()
 		circle->setCenter(
 		_treeNode->_center
 		);
-		_lastNode.reset();
 		_treePath.clear();
 	}
 
@@ -846,7 +851,7 @@ void GraphicsScene::init()
 		0.5, 0.4, 0.3, 0.2
 	};
 	for (qreal r : radius) {
-		auto *circle = addCircle(
+		addCircle(
 		{0., 0.}, r
 		);
 	}
