@@ -208,11 +208,21 @@ void GraphicsScene::check(std::vector<std::string> &result) const
 
 bool GraphicsScene::test(const QPointF &point)
 {
+	if (_mode != Mode::Test) return false;
+
+	if (_indexToCircle.empty() || !_indexToCircle.at(0)->containsPoint(point)) {
+		return false;
+	}
+	_knot1 = addKnot(point);
+	_knot2 = nullptr;
+	updateKnots();
+	start();
+
 	CircleItem *circ = nullptr;
 	_treeNode = _treeRoot;
 	while (_treeNode) {
-		auto center = _treeNode->_center;
-		(circ = _treeNode->_circle)->setCenter(center);
+		auto center = _treeNode->_center; circ = _treeNode->_circle;
+		circ->setCenter(center);
 		int ans = circ->containsPoint(point);
 		circ->setVisible(true);
 		circ->setOpaque(ans);
@@ -301,14 +311,6 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 		updateKnots();
 	}
 	else {
-		if (_indexToCircle.empty() ||
-		   !_indexToCircle.at(0)->containsPoint(point)) {
-			return;
-		}
-		_knot1 = addKnot(point);
-		_knot2 = nullptr;
-		updateKnots();
-		start();
 		test(point);
 	}
 	if (_monitor) _monitor->sendPosition(point, true);

@@ -75,31 +75,42 @@ void MainWindow::on_buttonOpen_clicked()
 
 void MainWindow::on_buttonPlace_clicked()
 {
-	bool inv = ui->checkInvert->isChecked();
-	bool chr = ui->checkChord->isChecked();
-
-	if (!ui->checkPoint->isChecked()) {
-		if (!ui->graphicsView->getScene()->placeToChord(inv)) {
-			sendError("Operation failed!");
-			return;
-		}
-	}
-	else {
-		bool ok1, ok2;
-		qreal x = ui->editX->text().toDouble(&ok1);
-		qreal y = ui->editY->text().toDouble(&ok2);
+	GraphicsScene *scene = ui->graphicsView->getScene();
+	const bool inv = ui->checkInvert->isChecked();
+	const bool chr = ui->checkChord->isChecked();
+	const bool dot = ui->checkPoint->isChecked();
+	QPointF point;
+	if (dot) {
+		bool ok1; qreal x = ui->editX->text().toDouble(&ok1);
+		bool ok2; qreal y = ui->editY->text().toDouble(&ok2);
 		if (!ok1 || !ok2) {
 			sendError("Incorrect format!");
 			return;
 		}
-		QPointF p(x, y);
-		bool ok = chr?
-		    ui->graphicsView->getScene()->placeToLocal(p, inv):
-		    ui->graphicsView->getScene()->placeToPoint(p);
-		if (!ok) {
-			sendError("Operation failed!");
-			return;
+		point = QPointF(x, y);
+	}
+	if (scene->getMode() != GraphicsScene::Mode::Test) {
+		if (dot) {
+			bool ok = chr?
+			          scene->placeToLocal(point, inv):
+			          scene->placeToPoint(point);
+			if (!ok) {
+				sendError(
+				"Operation failed!"
+				);
+			}
 		}
+		else {
+			if (!scene->placeToChord(inv)) {
+				sendError(
+				"Operation failed!"
+				);
+			}
+		}
+		return;
+	}
+	if (dot) {
+		scene->test(point);
 	}
 }
 

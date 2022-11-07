@@ -41,6 +41,7 @@ public:
 	bool placeToLocal(const QPointF &loc, bool inv);
 	bool placeToPoint(const QPointF &pos);
 	bool placeToChord(bool inv);
+	bool test(const QPointF &point);
 	bool goToBack();
 	bool goToNext(bool ans);
 	bool goToInv();
@@ -194,8 +195,6 @@ private:
 	void parse(TreeNode *node, int index, const QJsonObject &object);
 
 	void check(TreeNode *node, std::string &path, std::vector<std::string>& result) const;
-
-	bool test(const QPointF &point);
 
 	CircleItem* addCircle(const QPointF& center, qreal radius);
 
