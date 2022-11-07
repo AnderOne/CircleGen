@@ -25,10 +25,14 @@ MainWindow::~MainWindow() {
 
 void MainWindow::sendPosition(const QPointF &point, bool fixed)
 {
-	std::string text = "(" +
-	                   std::to_string(point.x()) + ", " + std::to_string(point.y()) +
-	                   ")";
-	ui->label->setText(text.c_str());
+	QString strX = QString::number(point.x()), strY = QString::number(point.y());
+	if (!fixed) {
+		ui->label->setText("(" + strX + ", " + strY + ")");
+	}
+	else {
+		ui->editX->setText(strX);
+		ui->editY->setText(strY);
+	}
 }
 
 void MainWindow::sendTreePath(const QString &path, bool fixed)

@@ -311,6 +311,7 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 		start();
 		test(point);
 	}
+	if (_monitor) _monitor->sendPosition(point, true);
 }
 
 void GraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
