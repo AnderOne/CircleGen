@@ -13,8 +13,7 @@ using Mode = GraphicsScene::Mode;
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
-	ui->graphicsView->getScene()->setLabelPath(ui->labelTreePath);
-	ui->graphicsView->getScene()->setLabel(ui->label);
+	ui->graphicsView->getScene()->setMonitor(this);
 
 	this->listModel = new QStringListModel(this);
 	ui->listView->setModel(listModel);
@@ -22,6 +21,32 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 
 MainWindow::~MainWindow() {
 	delete ui;
+}
+
+void MainWindow::sendPosition(const QPointF &point, bool fixed)
+{
+	std::string text = "(" +
+	                   std::to_string(point.x()) + ", " + std::to_string(point.y()) +
+	                   ")";
+	ui->label->setText(text.c_str());
+}
+
+void MainWindow::sendTreePath(const QString &path, bool fixed)
+{
+	QPalette palette;
+	palette.setColor(QPalette::WindowText, fixed? Qt::black: Qt::red);
+	ui->labelTreePath->setPalette(palette);
+	ui->labelTreePath->setText(path);
+}
+
+void MainWindow::sendError(const QString &message)
+{
+	QMessageBox messageBox;
+	messageBox.setFixedSize(500, 200);
+	messageBox.critical(
+	0, "Error",
+	message
+	);
 }
 
 void MainWindow::on_buttonSave_clicked()
@@ -51,12 +76,7 @@ void MainWindow::on_buttonPlace_clicked()
 
 	if (!ui->checkPoint->isChecked()) {
 		if (!ui->graphicsView->getScene()->placeToChord(inv)) {
-			QMessageBox messageBox;
-			messageBox.setFixedSize(500, 200);
-			messageBox.critical(
-			0, "Error",
-			"Operation failed!"
-			);
+			sendError("Operation failed!");
 			return;
 		}
 	}
@@ -65,12 +85,7 @@ void MainWindow::on_buttonPlace_clicked()
 		qreal x = ui->editX->text().toDouble(&ok1);
 		qreal y = ui->editY->text().toDouble(&ok2);
 		if (!ok1 || !ok2) {
-			QMessageBox messageBox;
-			messageBox.setFixedSize(500, 200);
-			messageBox.critical(
-			0, "Error",
-			"Incorrect format!"
-			);
+			sendError("Incorrect format!");
 			return;
 		}
 		QPointF p(x, y);
@@ -78,12 +93,7 @@ void MainWindow::on_buttonPlace_clicked()
 		    ui->graphicsView->getScene()->placeToLocal(p, inv):
 		    ui->graphicsView->getScene()->placeToPoint(p);
 		if (!ok) {
-			QMessageBox messageBox;
-			messageBox.setFixedSize(500, 200);
-			messageBox.critical(
-			0, "Error",
-			"Operation failed!"
-			);
+			sendError("Operation failed!");
 			return;
 		}
 	}

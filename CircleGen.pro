@@ -30,6 +30,7 @@ INCLUDEPATH += inc inc/steg
 HEADERS += \
     inc/graphicsscene.hpp \
     inc/graphicsview.hpp \
+    inc/monitor.hpp \
     inc/mainwindow.hpp
 
 SOURCES += \

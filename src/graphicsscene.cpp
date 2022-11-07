@@ -224,12 +224,10 @@ bool GraphicsScene::test(const QPointF &point)
 	if (!circ ||
 	    (circ->getIndex() < _circles.size() - 1) ||
 	    !circ->containsPoint(point)) {
-		QMessageBox messageBox;
-		messageBox.setFixedSize(500, 200);
-		messageBox.critical(
-		0, "Error",
-		"Bad solution!"
-		);
+		if (_monitor)
+			_monitor->sendError(
+			"Bad solution!"
+			);
 		return false;
 	}
 	return true;
@@ -317,11 +315,9 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void GraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-	if (_info) {
+	if (_monitor) {
 		auto point = pointFromScene(mouseEvent->scenePos());
-		std::string text = "(" + std::to_string(point.x()) + ", " +
-		                   std::to_string(point.y()) + ")";
-		_info->setText(text.c_str());
+		_monitor->sendPosition(point, false);
 	}
 	if (_mode == Mode::Test) return;
 
@@ -463,15 +459,8 @@ void GraphicsScene::updateKnots()
 void GraphicsScene::update()
 {
 	//Обновляем текстовый путь в дереве
-	if (_infoPath) {
-		QPalette palette;
-		palette.setColor(
-		QPalette::WindowText, (!_treeNode || !_treeNode->_fixed)? Qt::red: Qt::black
-		);
-		_infoPath->setPalette(palette);
-		_infoPath->setText(
-		_textPath.c_str()
-		);
+	if (_monitor) {
+		_monitor->sendTreePath(_textPath.c_str(), _treeNode && _treeNode->_fixed);
 	}
 
 	//Удаляем вспомогательные линии

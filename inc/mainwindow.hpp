@@ -6,16 +6,22 @@
 #include <QStringListModel>
 #include <QMessageBox>
 #include <QMainWindow>
+#include <monitor.hpp>
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow: public QMainWindow {
+class MainWindow: public QMainWindow, public Monitor {
 	Q_OBJECT
 public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
+
+	virtual void sendPosition(const QPointF& point, bool fixed) override;
+	virtual void sendTreePath(const QString& path, bool fixed) override;
+	virtual void sendError(const QString& message) override;
+
 private slots:
 	void on_buttonPlace_clicked();
 

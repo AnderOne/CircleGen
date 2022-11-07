@@ -7,6 +7,7 @@
 #include <QGraphicsPixmapItem>
 #include <QLabel>
 #include <QFile>
+#include "monitor.hpp"
 #include <cmath>
 #include <memory>
 #include <set>
@@ -34,11 +35,8 @@ public:
 		_filledArea = filled;
 		update();
 	}
-	void setLabelPath(QLabel *label) {
-		_infoPath = label;
-	}
-	void setLabel(QLabel *label) {
-		_info = label;
+	void setMonitor(Monitor *monitor) {
+		_monitor = monitor;
 	}
 	bool placeToLocal(const QPointF &loc, bool inv);
 	bool placeToPoint(const QPointF &pos);
@@ -233,8 +231,7 @@ private:
 	bool _filledArea = false;
 	Mode _mode = Free;
 
-	QLabel* _infoPath = nullptr;
-	QLabel* _info = nullptr;
+	Monitor *_monitor = nullptr;
 };
 
 #endif //__INCLUDE_GRAPHICSSCENE_H
