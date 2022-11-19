@@ -39,8 +39,9 @@ private slots:
 	void on_checkPoint_clicked();
 	void on_checkFill_clicked();
 
-	void on_buttonOpen_clicked();
+	void on_buttonPrint_clicked();
 	void on_buttonSave_clicked();
+	void on_buttonOpen_clicked();
 
 	void on_listView_clicked();
 

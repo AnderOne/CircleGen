@@ -53,6 +53,17 @@ void MainWindow::sendError(const QString &message)
 	);
 }
 
+void MainWindow::on_buttonPrint_clicked()
+{
+	QGraphicsView *view = ui->graphicsView;
+
+	QImage image(view->width(), view->height(), QImage::Format_ARGB32);
+	image.fill(Qt::white);
+	QPainter painter(&image);
+	view->render(&painter);
+	image.save("print.png");
+}
+
 void MainWindow::on_buttonSave_clicked()
 {
 	QString fileName = QFileDialog::getSaveFileName(this);
