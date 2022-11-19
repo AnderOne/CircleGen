@@ -216,6 +216,7 @@ private:
 	std::vector<QGraphicsLineItem*> _lines;
 
 	std::map<int, CircleItem*> _indexToCircle;
+	std::set<CircleItem*> _backCircles;
 	std::set<CircleItem*> _circles;
 	std::set<KnotItem*> _knots;
 	CircleItem* _circle = nullptr;

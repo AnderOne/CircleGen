@@ -466,6 +466,10 @@ void GraphicsScene::update()
 		_monitor->sendTreePath(_textPath.c_str(), _treeNode && _treeNode->_fixed);
 	}
 
+	//Удаляем вспомогательные области
+	for (const auto& circle : _backCircles) { removeItem(circle); delete circle; }
+	_backCircles.clear();
+
 	//Удаляем вспомогательные линии
 	for (const auto& line : _lines) { removeItem(line); delete line; }
 	_lines.clear();
@@ -522,19 +526,26 @@ void GraphicsScene::update()
 		for (int i = 0; i < _textPath.size(); ++ i) {
 			auto circle = _indexToCircle.at(i + 1);
 			if (_textPath[i] == '0') {
-				circle->setOpaque(false);
-				circle->setFilled(_filledArea);
+				if (_filledArea) {
+					auto *backCircle = new CircleItem(circle->getIndex());
+					_backCircles.insert(backCircle);
+					backCircle->setCenter(circle->getCenter());
+					backCircle->setRadius(circle->getRadius());
+					backCircle->setEnabled(false);
+					addItem(backCircle);
+					backCircle->setFilled(true);
+					backCircle->update();
+				}
+				circle->setOpaque(_filledArea);
 			}
 			else {
 				circle->setOpaque(true);
-				circle->setFilled(0);
 			}
 		}
 	}
 	else {
 		for (const auto& circle : _circles) {
 			circle->setOpaque(!_circle);
-			circle->setFilled(false);
 		}
 		if (_circle) _circle->setOpaque(true);
 	}
