@@ -15,6 +15,8 @@
 class GraphicsScene: public QGraphicsScene {
 	Q_OBJECT
 public:
+	static constexpr char ANY = 'x';
+
 	enum Mode { Free, Tree, Test };
 
 	explicit GraphicsScene(QObject *parent = nullptr);
@@ -28,19 +30,24 @@ public:
 
 	void check(std::vector<std::string>& result) const;
 
+	void setMonitor(Monitor *monitor) {
+		_monitor = monitor;
+	}
 	Mode getMode() const { return _mode; }
 	void setMode(Mode mode);
 
+	void setVisibleKnots(bool visible) {
+		_visibleKnots = visible;
+		updateKnots();
+	}
 	void setFilledArea(bool filled) {
 		_filledArea = filled;
 		update();
 	}
-	void setMonitor(Monitor *monitor) {
-		_monitor = monitor;
-	}
 	bool placeToLocal(const QPointF &loc, bool inv);
 	bool placeToPoint(const QPointF &pos);
 	bool placeToChord(bool inv);
+	bool isFixedPath() const;
 	bool test(const QPointF &point);
 	bool goToBack();
 	bool goToNext(bool ans);
@@ -78,7 +85,7 @@ private:
 				auto y1 = std::min(p1.y(), p2.y());
 				auto y2 = std::max(p1.y(), p2.y());
 				this->setRect(0, 0, x2 - x1, y2 - y1);
-				QColor hiddenColor = _filled? QColor(234, 234, 234) :
+				QColor hiddenColor = _filled? QColor(220, 220, 220) :
 				                              QColor(200, 200, 200);
 				if (_filled) {
 					QBrush brush; brush.setColor(hiddenColor);
@@ -228,6 +235,7 @@ private:
 	QPointF _center = {0., 0.};
 	qreal _scale = 1.;
 
+	bool _visibleKnots = true;
 	bool _filledArea = false;
 	Mode _mode = Free;
 

@@ -187,7 +187,7 @@ void GraphicsScene::check(TreeNode *node, std::string &path, std::vector<std::st
 			int n = _circles.size() - 2;
 			result.push_back(path);
 			auto &s = result.back();
-			s.resize(n, 'x');
+			s.resize(n, ANY);
 		}
 		path.pop_back();
 	}
@@ -248,7 +248,8 @@ void GraphicsScene::setMode(Mode mode)
 	_circle = nullptr;
 	_knot1 = nullptr;
 	_knot2 = nullptr;
-	if ((_mode == Mode::Test) && (mode == Mode::Tree)) {
+	if ((_mode == Mode::Test) && (mode == Mode::Tree) &&
+	    (_treeNode != _treeRoot)) {
 		_mode = mode;
 		updateKnots();
 		return;
@@ -421,7 +422,8 @@ void GraphicsScene::updateKnots()
 		removeItem(knot);
 		delete knot;
 	}
-	if (_mode == Mode::Test) {
+	if (_mode == Mode::Test ||
+	    !_visibleKnots) {
 		update();
 		return;
 	}
@@ -634,6 +636,11 @@ bool GraphicsScene::placeToChord(bool inv)
 	return true;
 }
 
+bool GraphicsScene::isFixedPath() const
+{
+	return _treeNode && _treeNode->_fixed;
+}
+
 bool GraphicsScene::goToBack()
 {
 	if (_treePath.empty()) return false;
@@ -653,7 +660,7 @@ bool GraphicsScene::goToBack()
 	);
 	_treeNode = prev;
 
-	_textPath[_treePath.size()] = 'x';
+	_textPath[_treePath.size()] = ANY;
 
 	if (_mode != Mode::Test) {
 	    _knot1 = nullptr;
@@ -773,7 +780,7 @@ void GraphicsScene::clear()
 
 void GraphicsScene::start()
 {
-	_textPath = std::string(_circles.size() - 2, 'x');
+	_textPath = std::string(_circles.size() - 2, ANY);
 
 	if (_mode == Mode::Tree || !_treeRoot) {
 		if (!_treeRoot) {

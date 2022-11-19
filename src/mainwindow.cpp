@@ -55,13 +55,67 @@ void MainWindow::sendError(const QString &message)
 
 void MainWindow::on_buttonPrint_clicked()
 {
-	QGraphicsView *view = ui->graphicsView;
+	auto *view = ui->graphicsView;
 
-	QImage image(view->width(), view->height(), QImage::Format_ARGB32);
-	image.fill(Qt::white);
-	QPainter painter(&image);
-	view->render(&painter);
-	image.save("print.png");
+	auto print = [&](const QString &fname) {
+		QImage image(view->width(), view->height(), QImage::Format_ARGB32);
+		image.fill(Qt::white);
+		QPainter painter(&image);
+		view->render(&painter);
+		image.save(fname);
+	};
+
+	auto name = [](const QString &fname, int index) {
+		QString text = QString::number(index) + "-" + fname;
+		int shift = 0;
+		for (int max = 100; index < max; max/= 10) ++shift;
+		if (!index)
+			shift--;
+		text = QString(shift, '0') + text + ".png";
+		return text;
+	};
+
+	if (!ui->checkAllBranches->isChecked()) {
+		print("print.png");
+		return;
+	}
+
+	auto *scene = view->getScene();
+	if (scene->getMode() != GraphicsScene::Mode::Tree) {
+		return;
+	}
+	scene->setVisibleKnots(false);
+	scene->start();
+	view->setEnabled(false);
+	std::vector<int> path;
+	int index = 0;
+	if (scene->isFixedPath()) {
+		print(
+		name(ui->labelTreePath->text(), index++)
+		);
+		path.push_back(0);
+	}
+	while (!path.empty()) {
+		int ans = path.back();
+		if (ans > 1) {
+			scene->goToBack(); path.pop_back();
+			continue;
+		}
+		++ path.back();
+		if (!scene->goToNext(ans)) {
+			continue;
+		}
+		if (!scene->isFixedPath()) {
+			scene->goToBack();
+			continue;
+		}
+		print(
+		name(ui->labelTreePath->text(), index++)
+		);
+		path.push_back(0);
+	}
+	scene->setVisibleKnots(true);
+	view->setEnabled(true);
 }
 
 void MainWindow::on_buttonSave_clicked()
